@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lista del bebé</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF2F6; --surface:#FFFFFF; --ink:#1E2A43; --muted:#61708A; --line:#D6DFE9;
+  --yolk:#F4B942; --yolk-ink:#3A2A00; --sage:#7FAE9B; --sage-soft:#E3EFEA; --danger:#C2483B;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#121925; --surface:#1B2433; --ink:#E7EDF5; --muted:#93A1B8; --line:#2C384B;
+    --yolk:#F4B942; --yolk-ink:#2A1E00; --sage:#8CC0AB; --sage-soft:#20332D; --danger:#E5776B;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121925; --surface:#1B2433; --ink:#E7EDF5; --muted:#93A1B8; --line:#2C384B;
+  --yolk:#F4B942; --yolk-ink:#2A1E00; --sage:#8CC0AB; --sage-soft:#20332D; --danger:#E5776B;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.5 "Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:620px;margin:0 auto;padding:28px 18px 80px}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--yolk);outline-offset:2px;border-radius:10px}
+
+/* Cabecera */
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px}
+h1{font-size:2rem;line-height:1.1;font-weight:900;margin:0;letter-spacing:-0.01em}
+.sub{margin:6px 0 0;color:var(--muted);font-size:.95rem}
+.save{font-size:.82rem;color:var(--muted);white-space:nowrap;min-height:1.2em}
+
+/* Progreso: la pieza protagonista */
+.progress{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:18px 20px 20px;margin-bottom:18px}
+.count{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.count b{font-size:3rem;font-weight:900;line-height:1}
+.count span{color:var(--muted);font-weight:600}
+.beads{display:flex;flex-wrap:wrap;gap:5px;margin-top:14px}
+.bead{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);background:transparent;transition:background .25s,border-color .25s}
+.bead.on{background:var(--yolk);border-color:var(--yolk)}
+.done-msg{margin:12px 0 0;font-weight:700;color:var(--sage)}
+
+/* Añadir */
+.add{display:flex;gap:8px;margin-bottom:8px}
+.add input{flex:1;min-width:0;padding:13px 15px;border:2px solid var(--line);border-radius:14px;background:var(--surface);outline:none}
+.add input:focus{border-color:var(--yolk)}
+.btn{border:0;border-radius:14px;padding:12px 18px;font-weight:800;background:var(--yolk);color:var(--yolk-ink)}
+.btn.ghost{background:transparent;color:var(--muted);padding:8px 4px;font-weight:700}
+.btn.ghost:hover{color:var(--ink)}
+.add-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.bulk{display:none;margin-bottom:18px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px}
+.bulk.open{display:block}
+.bulk p{margin:0 0 10px;color:var(--muted);font-size:.92rem}
+.bulk textarea{width:100%;min-height:170px;padding:12px;border:2px solid var(--line);border-radius:12px;background:var(--bg);resize:vertical;outline:none;line-height:1.45}
+.bulk textarea:focus{border-color:var(--yolk)}
+.bulk .row{display:flex;justify-content:flex-end;gap:10px;margin-top:10px}
+
+/* Filtros */
+.filters{display:flex;gap:6px;margin-bottom:14px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;width:max-content;max-width:100%;overflow-x:auto}
+.filters button{border:0;background:transparent;border-radius:999px;padding:7px 14px;font-weight:700;color:var(--muted);white-space:nowrap}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+
+/* Lista */
+.group{margin-bottom:20px}
+.group h2{font-size:1.05rem;font-weight:800;margin:0 0 8px 4px;display:flex;gap:8px;align-items:baseline}
+.group h2 small{font-weight:600;color:var(--muted);font-size:.85rem}
+ul{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+li{display:flex;align-items:center;gap:12px;padding:12px 12px 12px 14px;border-top:1px solid var(--line)}
+li:first-child{border-top:0}
+.check{flex:none;width:30px;height:30px;border-radius:50%;border:2.5px solid var(--line);background:transparent;display:grid;place-items:center;padding:0;transition:background .2s,border-color .2s,transform .15s}
+.check:hover{border-color:var(--yolk)}
+.check svg{width:16px;height:16px;opacity:0;transform:scale(.4);transition:opacity .2s,transform .2s}
+li.done .check{background:var(--yolk);border-color:var(--yolk)}
+li.done .check svg{opacity:1;transform:scale(1)}
+.check:active{transform:scale(.9)}
+.name{flex:1;min-width:0;overflow-wrap:anywhere;font-weight:600}
+li.done .name{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--sage);text-decoration-thickness:2px;font-weight:400}
+.del{flex:none;border:0;background:transparent;color:var(--muted);width:34px;height:34px;border-radius:10px;display:grid;place-items:center;opacity:.55}
+.del:hover{opacity:1;color:var(--danger);background:var(--bg)}
+.empty{text-align:center;padding:36px 20px;background:var(--surface);border:2px dashed var(--line);border-radius:22px;color:var(--muted)}
+.empty strong{display:block;color:var(--ink);font-size:1.1rem;margin-bottom:4px}
+.foot{margin-top:26px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ro{padding:10px 14px;border-radius:12px;background:var(--sage-soft);color:var(--ink);font-size:.9rem;margin-bottom:16px}
+body.busy .list, body.busy .add, body.busy .bulk{pointer-events:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.loading{text-align:center;padding:40px 20px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:12px;font-size:.9rem;font-weight:700;max-width:90vw;z-index:10}
+.toast[hidden]{display:none}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(function(){
+  var state = {items:[]}, loaded = false, pending = 0, filter = "todos";
+  try { filter = sessionStorage.getItem("bebe:filtro") || "todos"; } catch(e){}
+  var app = document.getElementById("app");
+  var GS = (window.google && google.script && google.script.run) ? google.script.run : null;
+
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];}); }
+  function counts(){ var d=0; state.items.forEach(function(i){ if(i.done) d++; }); return {done:d,total:state.items.length}; }
+
+  function toast(t){ var el=document.getElementById("toast"); el.textContent=t; el.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(function(){el.hidden=true;},3500); }
+
+  // ---- Servidor ----
+  function call(fn, args){
+    if(!GS){ toast("Abre la app desde su enlace para guardar los cambios."); return; }
+    pending++;
+    var r = google.script.run.withSuccessHandler(function(list){
+      pending--;
+      if(!pending){ state.items = list || []; render(); }
+    }).withFailureHandler(function(err){
+      pending--;
+      toast("No se pudo guardar. Comprueba la conexión.");
+      cargar();
+    });
+    r[fn].apply(r, args || []);
+  }
+  function cargar(){
+    if(!GS){ loaded=true; render(); return; }
+    google.script.run.withSuccessHandler(function(list){
+      loaded = true;
+      if(!pending){ state.items = list || []; render(); }
+    }).withFailureHandler(function(){
+      loaded = true; render(); toast("No se pudo cargar la lista. Comprueba la conexión.");
+    }).obtenerLista();
+  }
+
+  function groups(){
+    var order=[], map={};
+    state.items.forEach(function(it){
+      var c = it.cat || "";
+      if(!(c in map)){ map[c]=[]; order.push(c); }
+      map[c].push(it);
+    });
+    order.sort(function(a,b){ return (a===""?-1:0) - (b===""?-1:0); });
+    return order.map(function(c){ return {cat:c, items:map[c]}; });
+  }
+
+  var tick = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var cross = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+
+  function render(){
+    var keep = document.getElementById("addInput"), draft = keep ? keep.value : "", hadFocus = keep && document.activeElement === keep;
+    var bulkOpen = document.getElementById("bulk") && document.getElementById("bulk").classList.contains("open");
+    var bulkDraft = document.getElementById("bulkText") ? document.getElementById("bulkText").value : "";
+    var c = counts();
+    var beads = "";
+    if (c.total <= 120) state.items.forEach(function(it){ beads += '<i class="bead'+(it.done?' on':'')+'"></i>'; });
+    var pct = c.total ? Math.round(c.done/c.total*100) : 0;
+    var left = c.total - c.done;
+
+    var listHtml = "";
+    if (!loaded){
+      listHtml = '<div class="loading">Cargando la lista…</div>';
+    } else if (!c.total){
+      listHtml = '<div class="empty"><strong>La lista está vacía</strong>Escribe un artículo arriba o pega tu lista entera con «Pegar varios a la vez».</div>';
+    } else {
+      var shown = 0;
+      groups().forEach(function(g){
+        var items = g.items.filter(function(i){ return filter==="todos" || (filter==="pendientes" ? !i.done : i.done); });
+        if(!items.length) return;
+        shown += items.length;
+        var gd = g.items.filter(function(i){return i.done;}).length;
+        listHtml += '<section class="group">' + (g.cat ? '<h2>'+esc(g.cat)+' <small>'+gd+' de '+g.items.length+'</small></h2>' : '') + '<ul>';
+        items.forEach(function(it){
+          listHtml += '<li class="'+(it.done?'done':'')+'" data-id="'+esc(it.id)+'">'+
+            '<button class="check" data-act="toggle" aria-pressed="'+(it.done?'true':'false')+'" aria-label="'+(it.done?'Desmarcar ':'Marcar como comprado: ')+esc(it.name)+'">'+tick+'</button>'+
+            '<span class="name">'+esc(it.name)+'</span>'+
+            '<button class="del" data-act="del" aria-label="Eliminar '+esc(it.name)+'">'+cross+'</button>'+
+          '</li>';
+        });
+        listHtml += '</ul></section>';
+      });
+      if(!shown) listHtml = '<div class="empty"><strong>'+(filter==="pendientes"?'¡Todo comprado!':'Aún no has marcado nada')+'</strong>'+(filter==="pendientes"?'No queda nada pendiente en la lista.':'Toca el círculo de un artículo cuando lo compres.')+'</div>';
+    }
+
+    app.innerHTML =
+      '<header class="head"><div><h1>Lista del bebé</h1><p class="sub">Marca cada cosa cuando ya la tengas.</p></div></header>'+
+      '<section class="progress" aria-label="Progreso">'+
+        '<div class="count"><b>'+c.done+'</b><span>de '+c.total+' comprados'+(c.total?' ('+pct+'%)':'')+'</span></div>'+
+        (beads ? '<div class="beads" aria-hidden="true">'+beads+'</div>' : '')+
+        (c.total && !left ? '<p class="done-msg">Lo tenéis todo. ¡Listos para su llegada!</p>' : (c.total ? '<p class="sub">Quedan '+left+' por comprar.</p>' : ''))+
+      '</section>'+
+      '<form class="add" id="addForm" autocomplete="off"><input id="addInput" placeholder="Añadir artículo, p. ej. Bañera" aria-label="Nuevo artículo" maxlength="120"><button class="btn" type="submit">Añadir</button></form>'+
+      '<div class="add-meta"><button class="btn ghost" id="bulkToggle" aria-expanded="'+(bulkOpen?'true':'false')+'">Pegar varios a la vez</button></div>'+
+      '<div class="bulk'+(bulkOpen?' open':'')+'" id="bulk"><p>Un artículo por línea. Si una línea termina en dos puntos (por ejemplo «Baño:»), se usa como categoría para los artículos que vienen debajo.</p>'+
+        '<textarea id="bulkText" placeholder="Habitación:&#10;Cuna&#10;Colchón&#10;Baño:&#10;Bañera&#10;Termómetro"></textarea>'+
+        '<div class="row"><button class="btn ghost" id="bulkCancel">Cancelar</button><button class="btn" id="bulkAdd">Añadir a la lista</button></div></div>'+
+      (c.total ? '<div class="filters" role="group" aria-label="Filtrar">'+
+        ['todos','pendientes','comprados'].map(function(f){ return '<button data-filter="'+f+'" aria-pressed="'+(filter===f)+'">'+f.charAt(0).toUpperCase()+f.slice(1)+'</button>'; }).join('')+
+      '</div>' : '')+
+      '<div class="list" id="list">'+listHtml+'</div>'+
+      (c.total ? '<div class="foot"><button class="btn ghost" id="uncheckAll">Desmarcar todo</button><button class="btn ghost" id="clearAll">Vaciar lista</button></div>' : '');
+
+    var ni = document.getElementById("addInput"); ni.value = draft; if(hadFocus) ni.focus();
+    document.getElementById("bulkText").value = bulkDraft;
+    bind();
+  }
+
+  function bind(){
+    var inp = document.getElementById("addInput");
+    document.getElementById("addForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      var v = inp.value.trim(); if(!v) return;
+      var it = {id:uid(), name:v.slice(0,120), cat:"", done:false};
+      state.items.push(it); inp.value=""; render();
+      document.getElementById("addInput").focus();
+      call("anadir", [[it]]);
+    });
+    var bt=document.getElementById("bulkToggle"), bk=document.getElementById("bulk");
+    bt.addEventListener("click", function(){ var o=bk.classList.toggle("open"); bt.setAttribute("aria-expanded", o); if(o) document.getElementById("bulkText").focus(); });
+    document.getElementById("bulkCancel").addEventListener("click", function(){ bk.classList.remove("open"); bt.setAttribute("aria-expanded","false"); });
+    document.getElementById("bulkAdd").addEventListener("click", function(){
+      var cat="", nuevos=[];
+      document.getElementById("bulkText").value.split(/\r?\n/).forEach(function(line){
+        var l = line.replace(/^\s*(?:[-*•·]|\d+[.)]|\[[ xX]?\])\s*/,"").trim();
+        if(!l) return;
+        if(/:$/.test(l)){ cat = l.slice(0,-1).trim(); return; }
+        nuevos.push({id:uid(), name:l.slice(0,120), cat:cat, done:false});
+      });
+      if(!nuevos.length) return;
+      state.items = state.items.concat(nuevos);
+      document.getElementById("bulkText").value = "";
+      bk.classList.remove("open");
+      render();
+      call("anadir", [nuevos]);
+    });
+    document.querySelectorAll("[data-filter]").forEach(function(b){
+      b.addEventListener("click", function(){ filter=b.dataset.filter; try{sessionStorage.setItem("bebe:filtro",filter);}catch(e){} render(); });
+    });
+    document.getElementById("list").addEventListener("click", function(e){
+      var b=e.target.closest("button[data-act]"); if(!b) return;
+      var id=b.closest("li").dataset.id;
+      var idx=state.items.findIndex(function(i){return i.id===id;}); if(idx<0) return;
+      if(b.dataset.act==="toggle"){
+        state.items[idx].done=!state.items[idx].done;
+        render();
+        var again=document.querySelector('li[data-id="'+id+'"] .check'); if(again) again.focus();
+        call("marcar", [id, state.items[idx].done]);
+      } else {
+        if(!confirm("¿Eliminar «"+state.items[idx].name+"» de la lista?")) return;
+        state.items.splice(idx,1); render();
+        call("eliminar", [id]);
+      }
+    });
+    var ua=document.getElementById("uncheckAll");
+    if(ua) ua.addEventListener("click", function(){ if(confirm("¿Desmarcar todos los artículos?")){ state.items.forEach(function(i){i.done=false;}); render(); call("desmarcarTodo"); } });
+    var ca=document.getElementById("clearAll");
+    if(ca) ca.addEventListener("click", function(){ if(confirm("¿Borrar todos los artículos de la lista?")){ state.items=[]; render(); call("vaciarLista"); } });
+  }
+
+  // Recargar al volver a la app, para ver lo que haya marcado la otra persona
+  document.addEventListener("visibilitychange", function(){ if(document.visibilityState==="visible" && !pending) cargar(); });
+  setInterval(function(){ if(document.visibilityState==="visible" && !pending && !(document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName))) cargar(); }, 45000);
+
+  render();
+  cargar();
+})();
+</script>
+</body>
+</html>

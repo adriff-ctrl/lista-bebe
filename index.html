@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lista del bebé</title>
+<meta name="theme-color" content="#1E2A43">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bebé">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+    font-family:"Nunito",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#EDF2F6;color:#1E2A43;text-align:center;padding:24px;box-sizing:border-box}
+  img{width:128px;height:128px}
+  h1{margin:0;font-size:1.6rem;font-weight:900}
+  p{margin:0;max-width:330px;line-height:1.5;color:#52617A}
+  .btns{display:flex;flex-direction:column;gap:10px;width:100%;max-width:280px}
+  button,a.btn{border:0;font:inherit;font-weight:800;padding:14px 26px;border-radius:14px;text-decoration:none;cursor:pointer}
+  #instalar{background:#F4B942;color:#3A2A00}
+  a.btn{background:#1E2A43;color:#fff}
+</style>
+</head>
+<body>
+  <img src="icon-512.png" alt="">
+  <h1>Lista del bebé</h1>
+  <p id="msg">Para instalarla: en Android, menú ⋮ de Chrome → «Instalar aplicación». En iPhone, en Safari, botón Compartir → «Añadir a pantalla de inicio».</p>
+  <div class="btns">
+    <button id="instalar" hidden>Instalar Lista del bebé</button>
+    <a class="btn" id="go" href="#">Abrir la lista</a>
+  </div>
+<script>
+  // ⬇️ PEGA AQUÍ LA URL DE TU APLICACIÓN WEB DE APPS SCRIPT (la que termina en /exec), entre las comillas
+  var URL_APP = 'https://script.google.com/macros/s/AKfycbxgCXpHyE9MaIT6k-9nH6rEmT6XYjXnV7yQ9UchMYBcfBpkCHVzonOQup38WvrtLG_t/exec';
+
+  document.getElementById('go').href = URL_APP;
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+
+  // Solo la app instalada salta a Google; en el navegador se queda aquí para que Chrome pueda instalarla con su icono.
+  var instalada = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if (instalada) {
+    document.getElementById('msg').textContent = 'Abriendo…';
+    document.getElementById('go').hidden = true;
+    location.replace(URL_APP);
+  }
+
+  var aviso;
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault(); aviso = e;
+    document.getElementById('instalar').hidden = false;
+    document.getElementById('msg').textContent = 'Instálala para tenerla en la pantalla de inicio con su icono.';
+  });
+  document.getElementById('instalar').onclick = function () {
+    if (!aviso) return;
+    aviso.prompt();
+    aviso.userChoice.then(function () { aviso = null; document.getElementById('instalar').hidden = true; });
+  };
+  window.addEventListener('appinstalled', function () {
+    document.getElementById('msg').textContent = 'Instalada. Ábrela desde el icono de Lista del bebé.';
+  });
+</script>
+</body>
+</html>
